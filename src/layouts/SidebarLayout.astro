@@ -76,9 +76,7 @@ const alternatePath = isEn
     </main>
   </div>
 
-  <script>
-    // Dynamically fetch the latest issue link
-    const locale = '{locale}';
+  <script define:vars={{ locale }}>
     const base = locale === 'en' ? '' : `/${locale}`;
     fetch(`${base}/news/latest-redirect.json`)
       .then(res => res.json())
