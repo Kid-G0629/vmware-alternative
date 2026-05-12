@@ -1,0 +1,23 @@
+---
+import { getCollection, getEntryBySlug } from 'astro:content';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('news');
+  return entries.map(entry => ({ params: { slug: entry.slug } }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntryBySlug('news', slug!);
+const { Content } = await entry!.render();
+---
+<html>
+  <head>
+    <title>{entry!.data.date.toISOString().split('T')[0]} VMware 替代周报</title>
+  </head>
+  <body>
+    <article>
+      <h1>{entry!.data.date.toISOString().split('T')[0]} 周报</h1>
+      <Content />
+    </article>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+const news = await getCollection('news');
+news.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+<html>
+  <head>
+    <title>VMware 替代方案周报</title>
+  </head>
+  <body>
+    <h1>VMware 替代方案周报</h1>
+    <ul>
+      {news.map(entry => (
+        <li>
+          <a href={`/news/${entry.slug}/`}>{entry.data.date.toISOString().split('T')[0]} 周报</a>
+        </li>
+      ))}
+    </ul>
+  </body>
+</html>
