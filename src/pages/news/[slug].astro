@@ -1,4 +1,6 @@
 ---
+import SidebarLayout from '../../layouts/SidebarLayout.astro';
+
 export async function getStaticPaths() {
   const postModules = import.meta.glob('../../content/news/*.md');
   return Object.keys(postModules).map((filepath) => {
@@ -25,124 +27,89 @@ const volDate = frontmatter?.date
   ? new Date(frontmatter.date).toISOString().split('T')[0].replace(/-/g, '.')
   : '';
 ---
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Vol. {volDate} · Infra Operator Weekly</title>
-  </head>
-  <body>
-    <main style="max-width: 860px; margin: 0 auto; padding: 2rem;">
-      <!-- 页头 -->
-      <a href="/news" style="color: #60a5fa; text-decoration: none; font-size: 0.9rem;">← 返回周报列表</a>
-      <h1 style="font-size: 2.2rem; margin: 1rem 0 0.2rem;">📡 Vol. {volDate} · Infra Operator Weekly</h1>
-      <p style="color: #a0aec0; margin-bottom: 1rem;">
-        📅 信息收集：{week || frontmatter?.date} · 由 AI 辅助整理
-      </p>
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
-        {tags.map((tag: string) => (
-          <span
-            style="background: #2d3748; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;"
-          >
-            #{tag}
-          </span>
-        ))}
-      </div>
 
-      <!-- 自动目录 -->
-      <details open style="margin-bottom: 2rem; background: #1e293b; padding: 1rem; border-radius: 12px;">
-        <summary style="font-weight: bold; margin-bottom: 0.5rem;">📑 本期目录</summary>
-        <nav id="toc" style="padding-left: 1rem; border-left: 2px solid #4a5568;">
-        </nav>
-      </details>
+<SidebarLayout title={`Vol. ${volDate} · Infra Operator Weekly`}>
+  <h1 style="font-size: 2.2rem; margin: 0 0 0.2rem;">📡 Vol. {volDate} · Infra Operator Weekly</h1>
+  <p style="color: #a0aec0; margin-bottom: 1rem;">📅 信息收集：{week || frontmatter?.date} · 由 AI 辅助整理</p>
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+    {tags.map((tag: string) => (
+      <span style="background: #2d3748; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.8rem;">#{tag}</span>
+    ))}
+  </div>
 
-      <!-- 正文 -->
-      <article
-        id="article-content"
-        style="
-          line-height: 1.75;
-          font-size: 1rem;
-        "
-      >
-        <Content />
-      </article>
-    </main>
+  <details open style="margin-bottom: 2rem; background: #1e293b; padding: 1rem; border-radius: 12px;">
+    <summary style="font-weight: bold; margin-bottom: 0.5rem;">📑 本期目录</summary>
+    <nav id="toc" style="padding-left: 1rem; border-left: 2px solid #4a5568;"></nav>
+  </details>
 
-    <script>
-      const article = document.getElementById('article-content');
-      const toc = document.getElementById('toc');
-      if (article && toc) {
-        const headings = article.querySelectorAll('h2');
-        headings.forEach((h2, index) => {
-          const id = `section-${index}`;
-          h2.setAttribute('id', id);
-          const link = document.createElement('a');
-          link.href = `#${id}`;
-          link.textContent = h2.textContent;
-          link.style.display = 'block';
-          link.style.padding = '0.15rem 0';
-          link.style.color = '#94a3b8';
-          link.style.textDecoration = 'none';
-          link.style.fontSize = '0.9rem';
-          toc.appendChild(link);
-        });
-      }
-    </script>
-  </body>
-  <style is:global>
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      margin: 0;
-      padding: 0;
+  <article id="article-content" style="line-height: 1.75; font-size: 1rem;">
+    <Content />
+  </article>
+
+  <script>
+    const article = document.getElementById('article-content');
+    const toc = document.getElementById('toc');
+    if (article && toc) {
+      const headings = article.querySelectorAll('h2');
+      headings.forEach((h2, index) => {
+        const id = `section-${index}`;
+        h2.setAttribute('id', id);
+        const link = document.createElement('a');
+        link.href = `#${id}`;
+        link.textContent = h2.textContent;
+        link.style.display = 'block';
+        link.style.padding = '0.15rem 0';
+        link.style.color = '#94a3b8';
+        link.style.textDecoration = 'none';
+        link.style.fontSize = '0.9rem';
+        toc.appendChild(link);
+      });
     }
-    #article-content h2 {
-      margin-top: 2.5rem;
-      padding-bottom: 0.3rem;
-      border-bottom: 1px solid #2d3748;
-      font-size: 1.5rem;
-    }
-    #article-content h3 {
-      margin-top: 1.8rem;
-      font-size: 1.2rem;
-    }
-    #article-content a {
-      color: #60a5fa;
-      text-decoration: none;
-    }
-    #article-content a:hover {
-      text-decoration: underline;
-    }
-    #article-content blockquote {
-      border-left: 3px solid #4a5568;
-      padding-left: 1rem;
-      color: #a0aec0;
-      margin: 1rem 0;
-    }
-    #article-content code {
-      background: #1e293b;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-size: 0.9em;
-    }
-    #article-content pre {
-      background: #1e293b;
-      padding: 1rem;
-      border-radius: 8px;
-      overflow-x: auto;
-      font-size: 0.9em;
-    }
-    #article-content hr {
-      border: none;
-      border-top: 1px solid #2d3748;
-      margin: 2rem 0;
-    }
-    #article-content ul, #article-content ol {
-      padding-left: 1.5rem;
-    }
-    details summary {
-      cursor: pointer;
-      color: #e2e8f0;
-    }
-  </style>
-</html>
+  </script>
+</SidebarLayout>
+
+<style is:global>
+  #article-content h2 {
+    margin-top: 2.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid #2d3748;
+    font-size: 1.5rem;
+  }
+  #article-content h3 {
+    margin-top: 1.8rem;
+    font-size: 1.2rem;
+  }
+  #article-content a {
+    color: #60a5fa;
+    text-decoration: none;
+  }
+  #article-content a:hover { text-decoration: underline; }
+  #article-content blockquote {
+    border-left: 3px solid #4a5568;
+    padding-left: 1rem;
+    color: #a0aec0;
+    margin: 1rem 0;
+  }
+  #article-content code {
+    background: #1e293b;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  #article-content pre {
+    background: #1e293b;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9em;
+  }
+  #article-content hr {
+    border: none;
+    border-top: 1px solid #2d3748;
+    margin: 2rem 0;
+  }
+  #article-content ul, #article-content ol {
+    padding-left: 1.5rem;
+  }
+  details summary { cursor: pointer; color: #e2e8f0; }
+</style>
