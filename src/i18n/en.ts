@@ -1,0 +1,48 @@
+export const en: Record<string, string> = {
+  'site.name': 'Infra Operator',
+  'site.tagline': 'VMware Alternative Weekly',
+
+  'nav.home': 'Home',
+  'nav.weekly': 'Weekly',
+  'nav.latest': 'Latest',
+  'nav.blog': 'Blog',
+
+  'footer.note': 'AI-assisted curation. Community sources credited.',
+
+  'home.eyelet': 'VMware Alternatives · Weekly',
+  'home.subtitle': '5 minutes to master the migration signals. Covering Broadcom moves, alternative maturity, and community insights — saving decision-makers time on information filtering.',
+  'home.latest': '📅 Latest Issue',
+  'home.read': 'Read this issue →',
+  'home.no_issues': 'No weekly issues yet.',
+  'home.sections_title': '📌 Core Sections',
+  'home.section1_title': '📋 VMware / Broadcom Moves',
+  'home.section1_desc': 'License changes, product roadmap, enterprise impact',
+  'home.section2_title': '🧩 Alternative Updates',
+  'home.section2_desc': 'Proxmox, XCP-ng, KubeVirt ecosystem progress',
+  'home.section3_title': '🧰 Migration Tools & Tips',
+  'home.section3_desc': 'Scripts, migration guides, and pitfalls',
+  'home.section4_title': '💰 Cost Watch',
+  'home.section4_desc': 'TCO analysis, hardware value, hidden costs',
+  'home.section5_title': '💬 Community Buzz',
+  'home.section5_desc': 'Reddit, HN — engineer sentiment on the ground',
+  'home.section6_title': '⭐ GitHub Hotspots',
+  'home.section6_desc': 'Open source trends, early signal detection',
+
+  'weekly.title': '📡 Infra Operator Weekly',
+  'weekly.subtitle': 'VMware Alternatives · Weekly Curation',
+  'weekly.latest_badge': 'Latest',
+  'weekly.read': 'Read this issue →',
+  'weekly.no_posts': 'No weekly issues yet.',
+  'weekly.info_prefix': '📅 Info collection:',
+  'weekly.ai_note': 'AI-assisted curation, community sources credited.',
+  'weekly.toc_title': '📑 Table of Contents',
+
+  'blog.title': '📝 Blog',
+  'blog.subtitle': 'VMware Alternatives · Deep Analysis & Perspectives',
+  'blog.no_posts': 'No articles yet.',
+
+  'lang.en': 'English',
+  'lang.zh': '中文',
+  'lang.switch_to_zh': '查看中文版 →',
+  'lang.switch_to_en': 'View in English →',
+};

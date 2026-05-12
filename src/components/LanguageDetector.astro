@@ -1,0 +1,49 @@
+---
+const { locale = 'en' } = Astro.props;
+const lang = locale || 'en';
+---
+
+<script define:vars={{ lang }}>
+(function () {
+  // Respect user's explicit choice
+  const stored = localStorage.getItem('lang-preference');
+  if (stored) return;
+
+  const browserLang = navigator.language || navigator.languages?.[0] || '';
+  const prefersZh = browserLang.startsWith('zh');
+
+  if (prefersZh && lang === 'en') {
+    const banner = document.createElement('div');
+    banner.id = 'lang-banner';
+    banner.innerHTML = `
+      <span>🇨🇳 中文版本可用 · <a href="/zh${window.location.pathname.replace(/\/$/g, '')}/" id="lang-banner-link" style="color: #60a5fa; font-weight: 600; text-decoration: underline;">查看中文版 →</a></span>
+      <button id="lang-banner-close" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; padding: 0 0.5rem;">&times;</button>
+    `;
+    banner.style.cssText = 'position: fixed; bottom: 1rem; right: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.9rem; color: #e2e8f0; display: flex; align-items: center; gap: 0.5rem; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+    document.body.appendChild(banner);
+    document.getElementById('lang-banner-close')?.addEventListener('click', () => {
+      banner.remove();
+      localStorage.setItem('lang-preference', 'dismissed');
+    });
+    document.getElementById('lang-banner-link')?.addEventListener('click', () => {
+      localStorage.setItem('lang-preference', 'zh');
+    });
+  } else if (!prefersZh && lang === 'zh') {
+    const banner = document.createElement('div');
+    banner.id = 'lang-banner';
+    banner.innerHTML = `
+      <span>🇺🇸 English version available · <a href="${window.location.pathname.replace(/^\/zh/, '').replace(/\/$/g, '')}/" id="lang-banner-link" style="color: #60a5fa; font-weight: 600; text-decoration: underline;">View in English →</a></span>
+      <button id="lang-banner-close" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; padding: 0 0.5rem;">&times;</button>
+    `;
+    banner.style.cssText = 'position: fixed; bottom: 1rem; right: 1rem; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.9rem; color: #e2e8f0; display: flex; align-items: center; gap: 0.5rem; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+    document.body.appendChild(banner);
+    document.getElementById('lang-banner-close')?.addEventListener('click', () => {
+      banner.remove();
+      localStorage.setItem('lang-preference', 'dismissed');
+    });
+    document.getElementById('lang-banner-link')?.addEventListener('click', () => {
+      localStorage.setItem('lang-preference', 'en');
+    });
+  }
+})();
+</script>

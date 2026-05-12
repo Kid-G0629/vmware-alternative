@@ -1,18 +1,29 @@
 ---
-import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import SidebarLayout from '../../../layouts/SidebarLayout.astro';
 
 export async function getStaticPaths() {
-  const postModules = import.meta.glob('../../content/blog/**/*.md');
-  return Object.keys(postModules).map((filepath) => {
+  const enModules = import.meta.glob('../../../content/blog/en/**/*.md');
+  const zhModules = import.meta.glob('../../../content/blog/zh/**/*.md');
+
+  const paths = [];
+  for (const filepath of Object.keys(enModules)) {
     const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
-    return { params: { slug } };
-  });
+    if (slug) paths.push({ params: { locale: 'en', slug } });
+  }
+  for (const filepath of Object.keys(zhModules)) {
+    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
+    if (slug) paths.push({ params: { locale: 'zh', slug } });
+  }
+  return paths;
 }
 
-const { slug } = Astro.params;
+const { locale, slug } = Astro.params;
+const lang = locale || 'en';
 
-const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
-const key = Object.keys(postModules).find((path) => path.includes(`/${slug}.md`));
+const postModules = import.meta.glob('../../../content/blog/**/*.md', { eager: true });
+const key = Object.keys(postModules).find(
+  (path) => path.includes(`/${lang}/`) && path.includes(`/${slug}.md`)
+);
 const post = key ? postModules[key] : null;
 
 if (!post) {
@@ -28,7 +39,7 @@ const author = frontmatter?.author || '';
 const readingTime = frontmatter?.readingTime || '';
 ---
 
-<SidebarLayout title={`${title} | vmalternatives.org Blog`} description={description}>
+<SidebarLayout title={`${title} | vmalternatives.org Blog`} description={description} locale={locale}>
   <article>
     <header style="margin-bottom: 2rem;">
       <h1 style="font-size: 2.2rem; margin: 0 0 0.5rem; line-height: 1.3;">{title}</h1>

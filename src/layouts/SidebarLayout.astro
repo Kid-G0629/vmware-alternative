@@ -1,121 +1,185 @@
 ---
+import Layout from './Layout.astro';
+import { t } from '../i18n';
+import LanguageDetector from '../components/LanguageDetector.astro';
+
 export interface Props {
   title: string;
   description?: string;
+  locale?: string;
 }
-const { title, description } = Astro.props;
+const { title, description, locale = 'en' } = Astro.props;
+const lang = locale || 'en';
+const basePath = lang === 'en' ? '' : `/${lang}`;
+
+// Strip locale prefix from pathname for active state comparison
+const path = Astro.url.pathname.replace(/\/$/, '');
+const cleanPath = path.replace(/^\/(zh|en)/, '') || '/';
+const isEn = lang === 'en';
+
+// Compute the other language's equivalent path
+const alternatePath = isEn
+  ? `/zh${cleanPath === '/' ? '' : cleanPath}/`
+  : `${cleanPath === '/' ? '' : cleanPath}/`;
 ---
 
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>{title}</title>
-    {description && <meta name="description" content={description} />}
-  </head>
-  <body>
-    <div class="app-layout">
-      <!-- 左侧导航 -->
-      <nav class="sidebar">
-        <div class="logo">
-          <a href="/" style="text-decoration: none; color: inherit;">
-            <h2>📡 Infra <br />Operator</h2>
+<Layout title={title} description={description} locale={locale}>
+  <div class="app-layout">
+    <!-- Sidebar navigation -->
+    <nav class="sidebar">
+      <div class="logo">
+        <a href={basePath || '/'} style="text-decoration: none; color: inherit;">
+          <h2>📡 Infra <br />Operator</h2>
+        </a>
+      </div>
+      <ul class="nav-links">
+        <li>
+          <a href={basePath || '/'} class={cleanPath === '/' ? 'active' : ''}>
+            🏠 {t(locale, 'nav.home')}
+          </a>
+        </li>
+        <li>
+          <a href={`${basePath}/news/`} class={cleanPath.startsWith('/news') ? 'active' : ''}>
+            📰 {t(locale, 'nav.weekly')}
+          </a>
+        </li>
+        <li>
+          <a href={`${basePath}/news/latest`} id="latest-link">
+            🔥 {t(locale, 'nav.latest')}
+          </a>
+        </li>
+        <li>
+          <a href={`${basePath}/blog/`} class={cleanPath.startsWith('/blog') ? 'active' : ''}>
+            📝 {t(locale, 'nav.blog')}
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <!-- Language switcher -->
+        <div class="lang-switcher">
+          <a href={isEn ? path || '/' : alternatePath} class={isEn ? 'lang-active' : ''}>
+            🇺🇸 English
+          </a>
+          <span class="lang-divider">|</span>
+          <a href={isEn ? alternatePath : path || '/'} class={!isEn ? 'lang-active' : ''}>
+            🇨🇳 中文
           </a>
         </div>
-        <ul class="nav-links">
-          <li><a href="/" class={Astro.url.pathname === '/' ? 'active' : ''}>🏠 首页</a></li>
-          <li><a href="/news" class={Astro.url.pathname.startsWith('/news') ? 'active' : ''}>📰 周报列表</a></li>
-          <li><a href="/news/latest" id="latest-link">🔥 最新一期</a></li>
-          <li><a href="/blog" class={Astro.url.pathname.startsWith('/blog') ? 'active' : ''}>📝 Blog</a></li>
-        </ul>
-        <div class="sidebar-footer">
-          <p>由 AI 辅助整理<br />社区来源已标注</p>
-        </div>
-      </nav>
+        <p>{t(locale, 'footer.note')}</p>
+      </div>
+    </nav>
 
-      <!-- 右侧主内容 -->
-      <main class="main-content">
-        <slot />
-      </main>
-    </div>
+    <!-- Main content -->
+    <main class="main-content">
+      <slot />
+    </main>
+  </div>
 
-    <script>
-      // 动态获取最新一期周报的链接并更新"最新一期"链接
-      fetch('/news/latest-redirect.json')
-        .then(res => res.json())
-        .then(data => {
-          const link = document.getElementById('latest-link');
-          if (link && data.url) link.href = data.url;
-        })
-        .catch(() => {});
-    </script>
-  </body>
+  <script>
+    // Dynamically fetch the latest issue link
+    const locale = '{locale}';
+    const base = locale === 'en' ? '' : `/${locale}`;
+    fetch(`${base}/news/latest-redirect.json`)
+      .then(res => res.json())
+      .then(data => {
+        const link = document.getElementById('latest-link');
+        if (link && data.url) link.href = data.url;
+      })
+      .catch(() => {});
+  </script>
+  <LanguageDetector locale={locale} />
+</Layout>
 
-  <style is:global>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: #0f172a;
-      color: #e2e8f0;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      line-height: 1.6;
-    }
-    .app-layout {
-      display: flex;
-      min-height: 100vh;
-    }
-    .sidebar {
-      width: 260px;
-      background: #0b1120;
-      padding: 2rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #1e293b;
-      flex-shrink: 0;
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      overflow-y: auto;
-    }
-    .main-content {
-      flex: 1;
-      margin-left: 260px;
-      padding: 3rem 2rem;
-      max-width: 900px;
-    }
-    .logo h2 {
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
-      line-height: 1.3;
-      color: #f1f5f9;
-    }
-    .nav-links {
-      list-style: none;
-      flex-grow: 1;
-    }
-    .nav-links li {
-      margin-bottom: 0.75rem;
-    }
-    .nav-links a {
-      display: block;
-      padding: 0.5rem 1rem;
-      text-decoration: none;
-      color: #94a3b8;
-      border-radius: 8px;
-      transition: background 0.15s;
-    }
-    .nav-links a:hover,
-    .nav-links a.active {
-      background: #1e293b;
-      color: #e2e8f0;
-    }
-    .sidebar-footer {
-      margin-top: auto;
-      font-size: 0.8rem;
-      color: #64748b;
-    }
-  </style>
-</html>
+<style is:global>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+  }
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+  .sidebar {
+    width: 260px;
+    background: #0b1120;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #1e293b;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .main-content {
+    flex: 1;
+    margin-left: 260px;
+    padding: 3rem 2rem;
+    max-width: 900px;
+  }
+  .logo h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    line-height: 1.3;
+    color: #f1f5f9;
+  }
+  .nav-links {
+    list-style: none;
+    flex-grow: 1;
+  }
+  .nav-links li {
+    margin-bottom: 0.75rem;
+  }
+  .nav-links a {
+    display: block;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    color: #94a3b8;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .nav-links a:hover,
+  .nav-links a.active {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+  .lang-switcher {
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .lang-switcher a {
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 0.15rem 0.25rem;
+    border-radius: 4px;
+    transition: color 0.15s;
+  }
+  .lang-switcher a:hover {
+    color: #e2e8f0;
+  }
+  .lang-switcher .lang-active {
+    color: #60a5fa;
+    font-weight: 600;
+  }
+  .lang-divider {
+    color: #475569;
+  }
+</style>

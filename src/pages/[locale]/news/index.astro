@@ -1,8 +1,21 @@
 ---
-import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import SidebarLayout from '../../../layouts/SidebarLayout.astro';
+import { t } from '../../../i18n';
 
-const postModules = import.meta.glob('../../content/news/*.md', { eager: true });
+export async function getStaticPaths() {
+  return [
+    { params: { locale: 'en' } },
+    { params: { locale: 'zh' } },
+  ];
+}
+
+const { locale } = Astro.params;
+const lang = locale || 'en';
+const basePath = lang === 'en' ? '' : `/${lang}`;
+
+const postModules = import.meta.glob('../../../content/news/**/*.md', { eager: true });
 const posts = Object.entries(postModules)
+  .filter(([filepath]) => filepath.includes(`/${lang}/`))
   .map(([filepath, mod]) => {
     const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
     const fm = (mod as any).frontmatter;
@@ -22,33 +35,33 @@ const latest = posts[0];
 const description = latest?.frontmatter?.description || '';
 ---
 
-<SidebarLayout title="Infra Operator Weekly | VMware 替代方案周报" description={description}>
-  <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">📡 Infra Operator Weekly</h1>
-  <p style="color: #a0aec0; margin-bottom: 2rem;">VMware 替代方案 · 每周精选</p>
+<SidebarLayout title={`Infra Operator Weekly | vmalternatives.org`} description={description} locale={locale}>
+  <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">{t(locale, 'weekly.title')}</h1>
+  <p style="color: #a0aec0; margin-bottom: 2rem;">{t(locale, 'weekly.subtitle')}</p>
 
   {latest && (
     <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
       <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
-        <span style="background: #3b82f6; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">最新一期</span>
+        <span style="background: #3b82f6; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">{t(locale, 'weekly.latest_badge')}</span>
         <span style="color: #a0aec0; font-size: 0.85rem;">📅 {latest.frontmatter.week}</span>
       </div>
       <h2 style="font-size: 1.6rem; margin: 0 0 0.75rem 0;">
-        <a href={`/news/${latest.slug}/`} style="color: inherit; text-decoration: none;">Vol. {latest.volDate} · Infra Operator Weekly</a>
+        <a href={`${basePath}/news/${latest.slug}/`} style="color: inherit; text-decoration: none;">Vol. {latest.volDate} · Infra Operator Weekly</a>
       </h2>
-      <p style="color: #cbd5e0; font-size: 1rem; line-height: 1.7;">{description || '本期精选 VMware 替代方案最新动态。'}</p>
-      <a href={`/news/${latest.slug}/`} style="display: inline-block; margin-top: 1rem; background: #3b82f6; color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">阅读本期周报 →</a>
+      <p style="color: #cbd5e0; font-size: 1rem; line-height: 1.7;">{description}</p>
+      <a href={`${basePath}/news/${latest.slug}/`} style="display: inline-block; margin-top: 1rem; background: #3b82f6; color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">{t(locale, 'weekly.read')}</a>
     </div>
   )}
 
   {posts.length === 0 ? (
-    <p>暂无周报</p>
+    <p>{t(locale, 'weekly.no_posts')}</p>
   ) : (
     <div style="display: grid; gap: 1.5rem;">
       {posts.map((post) => {
         const tags = post.frontmatter?.tags || [];
         const week = post.frontmatter?.week || '';
         return (
-          <a href={`/news/${post.slug}/`} style="display: block; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; background: #1a202c; text-decoration: none; color: inherit; transition: border-color 0.2s;" class="card">
+          <a href={`${basePath}/news/${post.slug}/`} style="display: block; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; background: #1a202c; text-decoration: none; color: inherit; transition: border-color 0.2s;" class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
               <time style="color: #a0aec0; font-size: 0.9rem;">📅 {post.frontmatter.date} · {post.volDate}</time>
               {week && <span style="background: #2d3748; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; color: #cbd5e0;">{week}</span>}

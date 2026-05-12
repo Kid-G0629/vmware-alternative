@@ -1,8 +1,21 @@
 ---
-import SidebarLayout from '../layouts/SidebarLayout.astro';
+import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import { t } from '../../i18n';
 
-const postModules = import.meta.glob('../content/news/*.md', { eager: true });
+export async function getStaticPaths() {
+  return [
+    { params: { locale: 'en' } },
+    { params: { locale: 'zh' } },
+  ];
+}
+
+const { locale } = Astro.params;
+const lang = locale || 'en';
+const basePath = lang === 'en' ? '' : `/${lang}`;
+
+const postModules = import.meta.glob('../../content/news/**/*.md', { eager: true });
 const posts = Object.entries(postModules)
+  .filter(([filepath]) => filepath.includes(`/${lang}/`))
   .map(([filepath, mod]) => {
     const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
     const fm = (mod as any).frontmatter;
@@ -19,37 +32,37 @@ const posts = Object.entries(postModules)
   );
 
 const latest = posts[0];
-const description = latest?.frontmatter?.description || '每周精选 VMware 替代方案最新动态，帮你 5 分钟掌握迁移关键信号。';
-const latestUrl = latest ? `/news/${latest.slug}/` : '#';
+const description = latest?.frontmatter?.description || '';
+const latestUrl = latest ? `${basePath}/news/${latest.slug}/` : `${basePath}/news/`;
 ---
 
-<SidebarLayout title="Infra Operator Weekly — VMware 替代方案前沿周报" description={description}>
+<SidebarLayout title={`${t(locale, 'site.name')} — ${t(locale, 'site.tagline')}`} description={description} locale={locale}>
   <section class="hero">
-    <p class="eyelet">VMware 替代方案 · 每周一期</p>
-    <h1>Infra Operator Weekly</h1>
-    <p class="subtitle">5 分钟掌握迁移关键信号。聚焦 Broadcom 动向、替代方案成熟度与社区实战，为技术决策者节省信息筛选时间。</p>
+    <p class="eyelet">{t(locale, 'home.eyelet')}</p>
+    <h1>{t(locale, 'site.name')} Weekly</h1>
+    <p class="subtitle">{t(locale, 'home.subtitle')}</p>
     {latest ? (
       <div class="latest-card">
-        <div class="latest-badge">📅 最新一期 · Vol. {latest.volDate}</div>
+        <div class="latest-badge">{t(locale, 'home.latest')} · Vol. {latest.volDate}</div>
         <div class="latest-desc">{description}</div>
-        <a href={latestUrl} class="btn-primary">阅读本期周报 →</a>
+        <a href={latestUrl} class="btn-primary">{t(locale, 'home.read')}</a>
       </div>
     ) : (
       <div class="latest-card">
-        <p>暂无周报，请先运行抓取脚本生成第一期。</p>
+        <p>{t(locale, 'home.no_issues')}</p>
       </div>
     )}
   </section>
 
   <section class="features">
-    <h2>📌 核心栏目</h2>
+    <h2>{t(locale, 'home.sections_title')}</h2>
     <div class="feature-grid">
-      <div class="feature-card"><h3>📋 VMware / Broadcom 动向</h3><p>许可变更、产品路线、企业影响</p></div>
-      <div class="feature-card"><h3>🧩 替代方案更新</h3><p>Proxmox、XCP-ng、KubeVirt 等生态进展</p></div>
-      <div class="feature-card"><h3>🧰 迁移工具/技巧</h3><p>实用脚本、迁移实战与避坑方案</p></div>
-      <div class="feature-card"><h3>💰 成本观察</h3><p>TCO 分析、硬件性价比与隐形开销</p></div>
-      <div class="feature-card"><h3>💬 社区热议</h3><p>Reddit、Hacker News 等一线工程师情绪</p></div>
-      <div class="feature-card"><h3>⭐ GitHub 热点</h3><p>开源项目趋势，提前发现技术信号</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section1_title')}</h3><p>{t(locale, 'home.section1_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section2_title')}</h3><p>{t(locale, 'home.section2_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section3_title')}</h3><p>{t(locale, 'home.section3_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section4_title')}</h3><p>{t(locale, 'home.section4_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section5_title')}</h3><p>{t(locale, 'home.section5_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section6_title')}</h3><p>{t(locale, 'home.section6_desc')}</p></div>
     </div>
   </section>
 </SidebarLayout>

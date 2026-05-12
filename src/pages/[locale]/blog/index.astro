@@ -1,11 +1,24 @@
 ---
-import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import SidebarLayout from '../../../layouts/SidebarLayout.astro';
+import { t } from '../../../i18n';
 
-const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
+export async function getStaticPaths() {
+  return [
+    { params: { locale: 'en' } },
+    { params: { locale: 'zh' } },
+  ];
+}
+
+const { locale } = Astro.params;
+const lang = locale || 'en';
+const basePath = lang === 'en' ? '' : `/${lang}`;
+
+const postModules = import.meta.glob('../../../content/blog/**/*.md', { eager: true });
 const posts = Object.entries(postModules)
+  .filter(([filepath]) => filepath.includes(`/${lang}/`))
   .map(([filepath, mod]) => {
     const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
-    const dir = filepath.split('/').slice(-2, -1)[0]; // e.g. 2026-05
+    const dir = filepath.split('/').slice(-2, -1)[0];
     const fm = (mod as any).frontmatter;
     return { slug, dir, frontmatter: fm };
   })
@@ -19,13 +32,13 @@ const posts = Object.entries(postModules)
 const months = [...new Set(posts.map((p) => p.dir))].sort().reverse();
 ---
 
-<SidebarLayout title="Blog | vmalternatives.org">
-  <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">📝 Blog</h1>
-  <p style="color: #a0aec0; margin-bottom: 2rem;">VMware 替代方案 · 深度分析与观点</p>
+<SidebarLayout title="Blog | vmalternatives.org" locale={locale}>
+  <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">{t(locale, 'blog.title')}</h1>
+  <p style="color: #a0aec0; margin-bottom: 2rem;">{t(locale, 'blog.subtitle')}</p>
 
   {months.map((month) => {
     const monthPosts = posts.filter((p) => p.dir === month);
-    const label = month.replace('-', '年') + '月';
+    const label = lang === 'zh' ? month.replace('-', '年') + '月' : month;
     return (
       <div style="margin-bottom: 2rem;">
         <h2 style="font-size: 1.3rem; color: #94a3b8; margin-bottom: 1rem;">📁 {label}</h2>
@@ -33,7 +46,7 @@ const months = [...new Set(posts.map((p) => p.dir))].sort().reverse();
           {monthPosts.map((post) => {
             const tags = post.frontmatter?.tags || [];
             return (
-              <a href={`/blog/${post.slug}/`} style="display: block; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; background: #1a202c; text-decoration: none; color: inherit; transition: border-color 0.2s;" class="card">
+              <a href={`${basePath}/blog/${post.slug}/`} style="display: block; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; background: #1a202c; text-decoration: none; color: inherit; transition: border-color 0.2s;" class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                   <time style="color: #a0aec0; font-size: 0.9rem;">📅 {post.frontmatter.date}</time>
                 </div>
@@ -54,7 +67,7 @@ const months = [...new Set(posts.map((p) => p.dir))].sort().reverse();
     );
   })}
 
-  {posts.length === 0 && <p style="color: #64748b;">暂无文章</p>}
+  {posts.length === 0 && <p style="color: #64748b;">{t(locale, 'blog.no_posts')}</p>}
 </SidebarLayout>
 
 <style>

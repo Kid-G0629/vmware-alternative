@@ -1,18 +1,30 @@
 ---
-import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import SidebarLayout from '../../../layouts/SidebarLayout.astro';
+import { t } from '../../../i18n';
 
 export async function getStaticPaths() {
-  const postModules = import.meta.glob('../../content/news/*.md');
-  return Object.keys(postModules).map((filepath) => {
+  const enModules = import.meta.glob('../../../content/news/en/*.md');
+  const zhModules = import.meta.glob('../../../content/news/zh/*.md');
+
+  const paths = [];
+  for (const filepath of Object.keys(enModules)) {
     const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
-    return { params: { slug } };
-  });
+    if (slug) paths.push({ params: { locale: 'en', slug } });
+  }
+  for (const filepath of Object.keys(zhModules)) {
+    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
+    if (slug) paths.push({ params: { locale: 'zh', slug } });
+  }
+  return paths;
 }
 
-const { slug } = Astro.params;
+const { locale, slug } = Astro.params;
+const lang = locale || 'en';
 
-const postModules = import.meta.glob('../../content/news/*.md', { eager: true });
-const key = Object.keys(postModules).find((path) => path.includes(`/${slug}.md`));
+const postModules = import.meta.glob('../../../content/news/**/*.md', { eager: true });
+const key = Object.keys(postModules).find(
+  (path) => path.includes(`/${lang}/`) && path.includes(`/${slug}.md`)
+);
 const post = key ? postModules[key] : null;
 
 if (!post) {
@@ -28,9 +40,9 @@ const volDate = frontmatter?.date
   : '';
 ---
 
-<SidebarLayout title={`Vol. ${volDate} · Infra Operator Weekly`}>
+<SidebarLayout title={`Vol. ${volDate} · Infra Operator Weekly`} locale={locale}>
   <h1 style="font-size: 2.2rem; margin: 0 0 0.2rem;">📡 Vol. {volDate} · Infra Operator Weekly</h1>
-  <p style="color: #a0aec0; margin-bottom: 1rem;">📅 信息收集：{week || frontmatter?.date} · 由 AI 辅助整理</p>
+  <p style="color: #a0aec0; margin-bottom: 1rem;">{t(locale, 'weekly.info_prefix')} {week || frontmatter?.date} · {t(locale, 'weekly.ai_note')}</p>
   <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
     {tags.map((tag: string) => (
       <span style="background: #2d3748; padding: 0.2rem 1rem; border-radius: 20px; font-size: 0.8rem;">#{tag}</span>
@@ -38,7 +50,7 @@ const volDate = frontmatter?.date
   </div>
 
   <details open style="margin-bottom: 2rem; background: #1e293b; padding: 1rem; border-radius: 12px;">
-    <summary style="font-weight: bold; margin-bottom: 0.5rem;">📑 本期目录</summary>
+    <summary style="font-weight: bold; margin-bottom: 0.5rem;">{t(locale, 'weekly.toc_title')}</summary>
     <nav id="toc" style="padding-left: 1rem; border-left: 2px solid #4a5568;"></nav>
   </details>
 
