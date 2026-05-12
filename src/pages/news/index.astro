@@ -2,10 +2,14 @@
 const postModules = import.meta.glob('../../content/news/*.md', { eager: true });
 
 const posts = Object.entries(postModules)
-  .map(([filepath, mod]) => ({
-    slug: filepath.split('/').pop()?.replace(/\.md$/, ''),
-    frontmatter: (mod as any).frontmatter,
-  }))
+  .map(([filepath, mod]) => {
+    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
+    const fm = (mod as any).frontmatter;
+    const volDate = fm?.date
+      ? new Date(fm.date).toISOString().split('T')[0].replace(/-/g, '.')
+      : '';
+    return { slug, frontmatter: fm, volDate };
+  })
   .filter((p) => p.frontmatter?.date)
   .sort(
     (a, b) =>
@@ -13,15 +17,8 @@ const posts = Object.entries(postModules)
       new Date(a.frontmatter.date).getTime()
   );
 
-function relativeTime(dateStr: string) {
-  const d = new Date(dateStr);
-  const now = new Date();
-  const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
-  if (diff === 0) return '今天';
-  if (diff === 1) return '昨天';
-  if (diff <= 7) return `${diff}天前`;
-  return dateStr;
-}
+const latest = posts[0];
+const description = latest?.frontmatter?.description || '';
 ---
 <html>
   <head>
@@ -29,9 +26,49 @@ function relativeTime(dateStr: string) {
     <title>Infra Operator Weekly | VMware 替代方案周报</title>
   </head>
   <body>
-    <main style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+    <main style="max-width: 860px; margin: 0 auto; padding: 2rem;">
       <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">📡 Infra Operator Weekly</h1>
       <p style="color: #a0aec0; margin-bottom: 2rem;">VMware 替代方案 · 每周精选</p>
+
+      {latest && (
+        <div style="
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          border: 1px solid #334155;
+          border-radius: 16px;
+          padding: 2rem;
+          margin-bottom: 2rem;
+        ">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+            <span style="background: #3b82f6; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+              最新一期
+            </span>
+            <span style="color: #a0aec0; font-size: 0.85rem;">📅 {latest.frontmatter.week}</span>
+          </div>
+          <h2 style="font-size: 1.6rem; margin: 0 0 0.75rem 0;">
+            <a href={`/news/${latest.slug}/`} style="color: inherit; text-decoration: none;">
+              Vol. {latest.volDate} · Infra Operator Weekly
+            </a>
+          </h2>
+          <p style="color: #cbd5e0; font-size: 1rem; line-height: 1.7;">
+            {description || '本期精选 VMware 替代方案最新动态，涵盖 Broadcom 许可变动、开源虚拟化平台更新与社区实践。'}
+          </p>
+          <a
+            href={`/news/${latest.slug}/`}
+            style="
+              display: inline-block;
+              margin-top: 1rem;
+              background: #3b82f6;
+              color: #fff;
+              padding: 0.5rem 1.2rem;
+              border-radius: 8px;
+              text-decoration: none;
+              font-weight: 500;
+            "
+          >
+            阅读本期周报 →
+          </a>
+        </div>
+      )}
 
       {posts.length === 0 ? (
         <p>暂无周报</p>
@@ -57,7 +94,7 @@ function relativeTime(dateStr: string) {
               >
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                   <time style="color: #a0aec0; font-size: 0.9rem;">
-                    📅 {post.frontmatter.date} · {relativeTime(post.frontmatter.date)}
+                    📅 {post.frontmatter.date} · {post.volDate}
                   </time>
                   {week && (
                     <span style="background: #2d3748; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; color: #cbd5e0;">
@@ -65,7 +102,7 @@ function relativeTime(dateStr: string) {
                     </span>
                   )}
                 </div>
-                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">{post.frontmatter.date} 周报</h2>
+                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">Vol. {post.volDate} · Infra Operator Weekly</h2>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                   {tags.map((tag: string) => (
                     <span

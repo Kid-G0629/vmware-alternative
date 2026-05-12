@@ -21,17 +21,20 @@ const { Content } = post as any;
 const frontmatter = (post as any).frontmatter;
 const tags = frontmatter?.tags || [];
 const week = frontmatter?.week || '';
+const volDate = frontmatter?.date
+  ? new Date(frontmatter.date).toISOString().split('T')[0].replace(/-/g, '.')
+  : '';
 ---
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>{frontmatter?.date} Infra Operator Weekly</title>
+    <title>Vol. {volDate} · Infra Operator Weekly</title>
   </head>
   <body>
     <main style="max-width: 860px; margin: 0 auto; padding: 2rem;">
       <!-- 页头 -->
       <a href="/news" style="color: #60a5fa; text-decoration: none; font-size: 0.9rem;">← 返回周报列表</a>
-      <h1 style="font-size: 2.2rem; margin: 1rem 0 0.2rem;">📡 {frontmatter?.date} 周报</h1>
+      <h1 style="font-size: 2.2rem; margin: 1rem 0 0.2rem;">📡 Vol. {volDate} · Infra Operator Weekly</h1>
       <p style="color: #a0aec0; margin-bottom: 1rem;">
         📅 信息收集：{week || frontmatter?.date} · 由 AI 辅助整理
       </p>
@@ -45,11 +48,10 @@ const week = frontmatter?.week || '';
         ))}
       </div>
 
-      <!-- 自动目录（仅包含 h2） -->
+      <!-- 自动目录 -->
       <details open style="margin-bottom: 2rem; background: #1e293b; padding: 1rem; border-radius: 12px;">
         <summary style="font-weight: bold; margin-bottom: 0.5rem;">📑 本期目录</summary>
         <nav id="toc" style="padding-left: 1rem; border-left: 2px solid #4a5568;">
-          {/* 目录会在客户端动态生成 */}
         </nav>
       </details>
 
@@ -66,7 +68,6 @@ const week = frontmatter?.week || '';
     </main>
 
     <script>
-      // 客户端生成目录：提取所有 h2，并给它们加 id，同时建立导航链接
       const article = document.getElementById('article-content');
       const toc = document.getElementById('toc');
       if (article && toc) {
@@ -95,7 +96,6 @@ const week = frontmatter?.week || '';
       margin: 0;
       padding: 0;
     }
-    /* 内容区样式增强 */
     #article-content h2 {
       margin-top: 2.5rem;
       padding-bottom: 0.3rem;
@@ -140,7 +140,6 @@ const week = frontmatter?.week || '';
     #article-content ul, #article-content ol {
       padding-left: 1.5rem;
     }
-    /* 目录样式微调 */
     details summary {
       cursor: pointer;
       color: #e2e8f0;
