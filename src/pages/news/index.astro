@@ -12,26 +12,95 @@ const posts = Object.entries(postModules)
       new Date(b.frontmatter.date).getTime() -
       new Date(a.frontmatter.date).getTime()
   );
+
+function relativeTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (diff === 0) return '今天';
+  if (diff === 1) return '昨天';
+  if (diff <= 7) return `${diff}天前`;
+  return dateStr;
+}
 ---
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>VMware 替代方案周报</title>
+    <title>Infra Operator Weekly | VMware 替代方案周报</title>
   </head>
   <body>
-    <h1>VMware 替代方案周报</h1>
-    {posts.length === 0 ? (
-      <p>暂无周报</p>
-    ) : (
-      <ul>
-        {posts.map((post) => (
-          <li>
-            <a href={`/news/${post.slug}/`}>
-              {post.frontmatter.date} 周报
-            </a>
-          </li>
-        ))}
-      </ul>
-    )}
+    <main style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+      <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">📡 Infra Operator Weekly</h1>
+      <p style="color: #a0aec0; margin-bottom: 2rem;">VMware 替代方案 · 每周精选</p>
+
+      {posts.length === 0 ? (
+        <p>暂无周报</p>
+      ) : (
+        <div style="display: grid; gap: 1.5rem;">
+          {posts.map((post) => {
+            const tags = post.frontmatter?.tags || [];
+            const week = post.frontmatter?.week || '';
+            return (
+              <a
+                href={`/news/${post.slug}/`}
+                style="
+                  display: block;
+                  border: 1px solid #2d3748;
+                  border-radius: 12px;
+                  padding: 1.5rem;
+                  background: #1a202c;
+                  text-decoration: none;
+                  color: inherit;
+                  transition: border-color 0.2s;
+                "
+                class="card"
+              >
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                  <time style="color: #a0aec0; font-size: 0.9rem;">
+                    📅 {post.frontmatter.date} · {relativeTime(post.frontmatter.date)}
+                  </time>
+                  {week && (
+                    <span style="background: #2d3748; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; color: #cbd5e0;">
+                      {week}
+                    </span>
+                  )}
+                </div>
+                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">{post.frontmatter.date} 周报</h2>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  {tags.map((tag: string) => (
+                    <span
+                      style="
+                        background: #2d3748;
+                        padding: 0.2rem 0.8rem;
+                        border-radius: 20px;
+                        font-size: 0.8rem;
+                        font-weight: 500;
+                      "
+                      class={`tag-${tag}`}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </main>
   </body>
+  <style is:global>
+    body {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+    }
+    .card:hover {
+      border-color: #4a5568;
+    }
+    .tag-alternative { background: #1e3a5f; color: #60a5fa; }
+    .tag-weekly { background: #1e3a5f; color: #60a5fa; }
+    .tag-vmware { background: #5b2c2c; color: #f87171; }
+  </style>
 </html>
