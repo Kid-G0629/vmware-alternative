@@ -1,20 +1,37 @@
 ---
-import { getCollection } from 'astro:content';
-const news = await getCollection('news');
-news.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const postModules = import.meta.glob('../../content/news/*.md', { eager: true });
+
+const posts = Object.entries(postModules)
+  .map(([filepath, mod]) => ({
+    slug: filepath.split('/').pop()?.replace(/\.md$/, ''),
+    frontmatter: (mod as any).frontmatter,
+  }))
+  .filter((p) => p.frontmatter?.date)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
 ---
 <html>
   <head>
+    <meta charset="UTF-8" />
     <title>VMware 替代方案周报</title>
   </head>
   <body>
     <h1>VMware 替代方案周报</h1>
-    <ul>
-      {news.map(entry => (
-        <li>
-          <a href={`/news/${entry.slug}/`}>{entry.data.date.toISOString().split('T')[0]} 周报</a>
-        </li>
-      ))}
-    </ul>
+    {posts.length === 0 ? (
+      <p>暂无周报</p>
+    ) : (
+      <ul>
+        {posts.map((post) => (
+          <li>
+            <a href={`/news/${post.slug}/`}>
+              {post.frontmatter.date} 周报
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
   </body>
 </html>
