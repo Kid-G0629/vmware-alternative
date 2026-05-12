@@ -1,0 +1,80 @@
+---
+import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import { t } from '../../i18n';
+
+const locale = 'en';
+const lang = 'en';
+const basePath = '';
+
+const postModules = import.meta.glob('../../content/news/**/*.md', { eager: true });
+const posts = Object.entries(postModules)
+  .filter(([filepath]) => filepath.includes(`/${lang}/`))
+  .map(([filepath, mod]) => {
+    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
+    const fm = (mod as any).frontmatter;
+    const volDate = fm?.date
+      ? new Date(fm.date).toISOString().split('T')[0].replace(/-/g, '.')
+      : '';
+    return { slug, frontmatter: fm, volDate };
+  })
+  .filter((p) => p.frontmatter?.date)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+
+const latest = posts[0];
+const description = latest?.frontmatter?.description || '';
+---
+
+<SidebarLayout title={`Infra Operator Weekly | vmalternatives.org`} description={description} locale={locale}>
+  <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">{t(locale, 'weekly.title')}</h1>
+  <p style="color: #a0aec0; margin-bottom: 2rem;">{t(locale, 'weekly.subtitle')}</p>
+
+  {latest && (
+    <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+        <span style="background: #3b82f6; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">{t(locale, 'weekly.latest_badge')}</span>
+        <span style="color: #a0aec0; font-size: 0.85rem;">📅 {latest.frontmatter.week}</span>
+      </div>
+      <h2 style="font-size: 1.6rem; margin: 0 0 0.75rem 0;">
+        <a href={`${basePath}/news/${latest.slug}/`} style="color: inherit; text-decoration: none;">Vol. {latest.volDate} · Infra Operator Weekly</a>
+      </h2>
+      <p style="color: #cbd5e0; font-size: 1rem; line-height: 1.7;">{description}</p>
+      <a href={`${basePath}/news/${latest.slug}/`} style="display: inline-block; margin-top: 1rem; background: #3b82f6; color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 500;">{t(locale, 'weekly.read')}</a>
+    </div>
+  )}
+
+  {posts.length === 0 ? (
+    <p>{t(locale, 'weekly.no_posts')}</p>
+  ) : (
+    <div style="display: grid; gap: 1.5rem;">
+      {posts.map((post) => {
+        const tags = post.frontmatter?.tags || [];
+        const week = post.frontmatter?.week || '';
+        return (
+          <a href={`${basePath}/news/${post.slug}/`} style="display: block; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; background: #1a202c; text-decoration: none; color: inherit; transition: border-color 0.2s;" class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <time style="color: #a0aec0; font-size: 0.9rem;">📅 {post.frontmatter.date} · {post.volDate}</time>
+              {week && <span style="background: #2d3748; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.8rem; color: #cbd5e0;">{week}</span>}
+            </div>
+            <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">Vol. {post.volDate} · Infra Operator Weekly</h2>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              {tags.map((tag: string) => (
+                <span style="background: #2d3748; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;" class={`tag-${tag}`}>#{tag}</span>
+              ))}
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  )}
+</SidebarLayout>
+
+<style>
+  .card:hover { border-color: #4a5568; }
+  .tag-alternative { background: #1e3a5f; color: #60a5fa; }
+  .tag-weekly { background: #1e3a5f; color: #60a5fa; }
+  .tag-vmware { background: #5b2c2c; color: #f87171; }
+</style>

@@ -3,23 +3,18 @@ import SidebarLayout from '../../../layouts/SidebarLayout.astro';
 import { t } from '../../../i18n';
 
 export async function getStaticPaths() {
-  const enModules = import.meta.glob('../../../content/news/en/*.md');
   const zhModules = import.meta.glob('../../../content/news/zh/*.md');
-
   const paths = [];
-  for (const filepath of Object.keys(enModules)) {
-    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
-    if (slug) paths.push({ params: { locale: 'en', slug } });
-  }
   for (const filepath of Object.keys(zhModules)) {
     const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
-    if (slug) paths.push({ params: { locale: 'zh', slug } });
+    if (slug) paths.push({ params: { slug } });
   }
   return paths;
 }
 
-const { locale, slug } = Astro.params;
-const lang = locale || 'en';
+const { slug } = Astro.params;
+const locale = 'zh';
+const lang = 'zh';
 
 const postModules = import.meta.glob('../../../content/news/**/*.md', { eager: true });
 const key = Object.keys(postModules).find(

@@ -1,0 +1,68 @@
+---
+import SidebarLayout from '../../../layouts/SidebarLayout.astro';
+import { t } from '../../../i18n';
+
+const locale = 'zh';
+const lang = 'zh';
+const basePath = '/zh';
+
+const postModules = import.meta.glob('../../../content/blog/**/*.md', { eager: true });
+const posts = Object.entries(postModules)
+  .filter(([filepath]) => filepath.includes(`/${lang}/`))
+  .map(([filepath, mod]) => {
+    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
+    const dir = filepath.split('/').slice(-2, -1)[0];
+    const fm = (mod as any).frontmatter;
+    return { slug, dir, frontmatter: fm };
+  })
+  .filter((p) => p.frontmatter?.date)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+
+const months = [...new Set(posts.map((p) => p.dir))].sort().reverse();
+---
+
+<SidebarLayout title="Blog | vmalternatives.org" locale={locale}>
+  <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">{t(locale, 'blog.title')}</h1>
+  <p style="color: #a0aec0; margin-bottom: 2rem;">{t(locale, 'blog.subtitle')}</p>
+
+  {months.map((month) => {
+    const monthPosts = posts.filter((p) => p.dir === month);
+    const label = month.replace('-', '年') + '月';
+    return (
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.3rem; color: #94a3b8; margin-bottom: 1rem;">📁 {label}</h2>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          {monthPosts.map((post) => {
+            const tags = post.frontmatter?.tags || [];
+            return (
+              <a href={`${basePath}/blog/${post.slug}/`} style="display: block; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; background: #1a202c; text-decoration: none; color: inherit; transition: border-color 0.2s;" class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <time style="color: #a0aec0; font-size: 0.9rem;">📅 {post.frontmatter.date}</time>
+                </div>
+                <h2 style="margin: 0 0 0.5rem 0; font-size: 1.3rem;">{post.frontmatter.title}</h2>
+                {post.frontmatter.description && (
+                  <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 0.75rem;">{post.frontmatter.description}</p>
+                )}
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  {tags.map((tag: string) => (
+                    <span style="background: #2d3748; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">#{tag}</span>
+                  ))}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    );
+  })}
+
+  {posts.length === 0 && <p style="color: #64748b;">{t(locale, 'blog.no_posts')}</p>}
+</SidebarLayout>
+
+<style>
+  .card:hover { border-color: #4a5568; }
+</style>

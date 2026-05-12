@@ -1,19 +1,12 @@
 ---
-import SidebarLayout from '../../../layouts/SidebarLayout.astro';
-import { t } from '../../../i18n';
+import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import { t } from '../../i18n';
 
-export async function getStaticPaths() {
-  return [
-    { params: { locale: 'en' } },
-    { params: { locale: 'zh' } },
-  ];
-}
+const locale = 'en';
+const lang = 'en';
+const basePath = '';
 
-const { locale } = Astro.params;
-const lang = locale || 'en';
-const basePath = lang === 'en' ? '' : `/${lang}`;
-
-const postModules = import.meta.glob('../../../content/blog/**/*.md', { eager: true });
+const postModules = import.meta.glob('../../content/blog/**/*.md', { eager: true });
 const posts = Object.entries(postModules)
   .filter(([filepath]) => filepath.includes(`/${lang}/`))
   .map(([filepath, mod]) => {
@@ -38,10 +31,9 @@ const months = [...new Set(posts.map((p) => p.dir))].sort().reverse();
 
   {months.map((month) => {
     const monthPosts = posts.filter((p) => p.dir === month);
-    const label = lang === 'zh' ? month.replace('-', '年') + '月' : month;
     return (
       <div style="margin-bottom: 2rem;">
-        <h2 style="font-size: 1.3rem; color: #94a3b8; margin-bottom: 1rem;">📁 {label}</h2>
+        <h2 style="font-size: 1.3rem; color: #94a3b8; margin-bottom: 1rem;">📁 {month}</h2>
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           {monthPosts.map((post) => {
             const tags = post.frontmatter?.tags || [];

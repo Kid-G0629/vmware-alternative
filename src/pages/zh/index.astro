@@ -1,0 +1,77 @@
+---
+import SidebarLayout from '../../layouts/SidebarLayout.astro';
+import { t } from '../../i18n';
+
+const locale = 'zh';
+const lang = 'zh';
+const basePath = '/zh';
+
+const postModules = import.meta.glob('../../content/news/**/*.md', { eager: true });
+const posts = Object.entries(postModules)
+  .filter(([filepath]) => filepath.includes(`/${lang}/`))
+  .map(([filepath, mod]) => {
+    const slug = filepath.split('/').pop()?.replace(/\.md$/, '');
+    const fm = (mod as any).frontmatter;
+    const volDate = fm?.date
+      ? new Date(fm.date).toISOString().split('T')[0].replace(/-/g, '.')
+      : '';
+    return { slug, frontmatter: fm, volDate };
+  })
+  .filter((p) => p.frontmatter?.date)
+  .sort(
+    (a, b) =>
+      new Date(b.frontmatter.date).getTime() -
+      new Date(a.frontmatter.date).getTime()
+  );
+
+const latest = posts[0];
+const description = latest?.frontmatter?.description || '';
+const latestUrl = latest ? `${basePath}/news/${latest.slug}/` : `${basePath}/news/`;
+---
+
+<SidebarLayout title={`${t(locale, 'site.name')} — ${t(locale, 'site.tagline')}`} description={description} locale={locale}>
+  <section class="hero">
+    <p class="eyelet">{t(locale, 'home.eyelet')}</p>
+    <h1>{t(locale, 'site.name')} Weekly</h1>
+    <p class="subtitle">{t(locale, 'home.subtitle')}</p>
+    {latest ? (
+      <div class="latest-card">
+        <div class="latest-badge">{t(locale, 'home.latest')} · Vol. {latest.volDate}</div>
+        <div class="latest-desc">{description}</div>
+        <a href={latestUrl} class="btn-primary">{t(locale, 'home.read')}</a>
+      </div>
+    ) : (
+      <div class="latest-card">
+        <p>{t(locale, 'home.no_issues')}</p>
+      </div>
+    )}
+  </section>
+
+  <section class="features">
+    <h2>{t(locale, 'home.sections_title')}</h2>
+    <div class="feature-grid">
+      <div class="feature-card"><h3>{t(locale, 'home.section1_title')}</h3><p>{t(locale, 'home.section1_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section2_title')}</h3><p>{t(locale, 'home.section2_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section3_title')}</h3><p>{t(locale, 'home.section3_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section4_title')}</h3><p>{t(locale, 'home.section4_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section5_title')}</h3><p>{t(locale, 'home.section5_desc')}</p></div>
+      <div class="feature-card"><h3>{t(locale, 'home.section6_title')}</h3><p>{t(locale, 'home.section6_desc')}</p></div>
+    </div>
+  </section>
+</SidebarLayout>
+
+<style>
+  .hero h1 { font-size: 2.8rem; margin: 0 0 1rem 0; color: #f8fafc; }
+  .eyelet { font-size: 0.85rem; color: #60a5fa; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .subtitle { font-size: 1.1rem; color: #94a3b8; max-width: 600px; margin-bottom: 2rem; }
+  .latest-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 2rem; margin-bottom: 2rem; }
+  .latest-badge { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #cbd5e0; }
+  .latest-desc { color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.7; }
+  .btn-primary { display: inline-block; background: #3b82f6; color: #fff; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-weight: 500; }
+  .btn-primary:hover { background: #2563eb; }
+  .features h2 { font-size: 1.6rem; margin: 2rem 0 1.5rem; color: #f1f5f9; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+  .feature-card { background: #1a202c; border: 1px solid #2d3748; border-radius: 12px; padding: 1.2rem; }
+  .feature-card h3 { font-size: 1rem; margin-bottom: 0.4rem; color: #e2e8f0; }
+  .feature-card p { font-size: 0.9rem; color: #94a3b8; }
+</style>
